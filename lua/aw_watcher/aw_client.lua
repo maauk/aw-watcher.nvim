@@ -1,7 +1,7 @@
 local utils = require("aw_watcher.utils")
 
-local ERR_NOTIFY_INTERVAL = 60 -- seconds
-local HEARTBEAT_MIN_INTERVAL = 8 -- seconds
+local ERR_NOTIFY_INTERVAL = 60 * 1000 -- milliseconds
+local HEARTBEAT_MAX_INTERVAL = 8 * 1000 -- milliseconds
 
 ---@class Client
 local Client = {}
@@ -24,6 +24,8 @@ function Client.new(bucket_conf, client_conf)
         connected = false,
         last_error_notify = nil,
         last_heartbeat = 0,
+        -- stay well below pulsetime so consecutive heartbeats always merge
+        heartbeat_interval = math.min(HEARTBEAT_MAX_INTERVAL, client_conf.pulsetime * 1000 / 2),
         hostname = bucket_conf.hostname,
         base_url = base_url,
         bucket_name = bucket_name,
@@ -81,7 +83,7 @@ function Client.heartbeat(self)
         return
     end
 
-    if now - self.last_heartbeat < HEARTBEAT_MIN_INTERVAL then
+    if now - self.last_heartbeat < self.heartbeat_interval then
         return
     end
 
