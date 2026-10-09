@@ -46,7 +46,8 @@ function Client.__post(self, url, data)
 
     local body = vim.fn.json_encode(data)
 
-    local args = { "POST", url, "-H", "Content-Type: application/json", "--data-raw", body }
+    -- --data-raw implies POST; -f makes curl exit non-zero on HTTP errors
+    local args = { "-s", "-f", "-o", "/dev/null", "-H", "Content-Type: application/json", "--data-raw", body, url }
 
     local handle
     ---@diagnostic disable-next-line: missing-fields
