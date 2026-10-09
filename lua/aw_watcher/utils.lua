@@ -1,4 +1,4 @@
-local function get_filename() return vim.fn.expand("%p") or "" end
+local function get_filename() return vim.fn.expand("%:p") or "" end
 
 local function get_filetype() return vim.bo.filetype end
 
