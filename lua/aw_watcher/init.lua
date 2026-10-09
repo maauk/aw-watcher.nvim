@@ -41,7 +41,16 @@ local function create_autocommands()
 
     local function make_heartbeat_cmd()
         vim.api.nvim_create_autocmd(
-            { "CursorMoved", "BufLeave", "BufEnter", "CursorMovedI", "CmdlineEnter", "CmdlineChanged" },
+            {
+                "CursorMoved",
+                "CursorMovedI",
+                "BufLeave",
+                "BufEnter",
+                "CmdlineEnter",
+                "CmdlineChanged",
+                "WinScrolled",
+                "FocusGained",
+            },
             { group = augroup, callback = M.heartbeat }
         )
     end
