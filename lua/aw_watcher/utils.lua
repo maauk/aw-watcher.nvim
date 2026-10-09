@@ -24,10 +24,11 @@ local function set_branch_name()
     return vim.b.branch_name
 end
 
-local has_notify, notify = pcall(require, "notify")
-if has_notify then
+local notify
+local has_nvim_notify, nvim_notify = pcall(require, "notify")
+if has_nvim_notify then
     function notify(msg, level)
-        vim.schedule(function() notify(msg, level, { title = "Activity Watcher" }) end)
+        vim.schedule(function() nvim_notify(msg, level, { title = "Activity Watcher" }) end)
     end
 else
     function notify(msg, level)
