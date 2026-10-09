@@ -24,6 +24,7 @@ function Client.new(bucket_conf, client_conf)
         connected = false,
         last_error_notify = nil,
         last_heartbeat = 0,
+        last_heartbeat_data = nil,
         -- stay well below pulsetime so consecutive heartbeats always merge
         heartbeat_interval = math.min(HEARTBEAT_MAX_INTERVAL, client_conf.pulsetime * 1000 / 2),
         hostname = bucket_conf.hostname,
@@ -70,7 +71,8 @@ function Client.create_bucket(self)
     self:__post(self.bucket_url, body)
 end
 
-function Client.heartbeat(self)
+---@param force boolean? bypass throttling, e.g. to close out the departing buffer
+function Client.heartbeat(self, force)
     assert(self)
 
     local now = vim.uv.now()
@@ -83,21 +85,29 @@ function Client.heartbeat(self)
         return
     end
 
-    if now - self.last_heartbeat < self.heartbeat_interval then
+    local data = {
+        file = utils.get_filename(),
+        project = vim.b.project_name,
+        branch = vim.b.branch_name,
+        language = utils.get_filetype(),
+    }
+
+    -- only throttle repeats of the same data, so switching files is never dropped
+    if
+        not force
+        and now - self.last_heartbeat < self.heartbeat_interval
+        and vim.deep_equal(data, self.last_heartbeat_data)
+    then
         return
     end
 
     self.last_heartbeat = now
+    self.last_heartbeat_data = data
 
     local body = {
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
         duration = 0,
-        data = {
-            file = utils.get_filename(),
-            project = vim.b.project_name,
-            branch = vim.b.branch_name,
-            language = utils.get_filetype(),
-        },
+        data = data,
     }
 
     self:__post(self.heartbeat_url, body)

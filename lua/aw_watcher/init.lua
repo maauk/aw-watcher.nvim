@@ -11,12 +11,13 @@ local M = {
     },
 }
 
-function M.heartbeat()
+function M.heartbeat(args)
     if not M.__private.aw then
         utils.notify("Wasn't initialized. Check your spec or run setup() function.", vim.log.levels.WARN)
         return
     end
-    M.__private.aw:heartbeat()
+    -- BufLeave carries the departing buffer's final timestamp; never drop it
+    M.__private.aw:heartbeat(args ~= nil and args.event == "BufLeave")
 end
 
 function M.bucket_start()
