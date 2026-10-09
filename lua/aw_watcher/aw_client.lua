@@ -79,7 +79,7 @@ function Client.heartbeat(self, force)
     local now = vim.uv.now()
 
     if not self.connected then
-        if self.last_error_notify and (now - self.last_error_notify > ERR_NOTIFY_INTERVAL) then
+        if not self.last_error_notify or (now - self.last_error_notify > ERR_NOTIFY_INTERVAL) then
             utils.notify("Not connected. Use :AWStart to try again.", vim.log.levels.WARN)
             self.last_error_notify = now
         end
